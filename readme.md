@@ -28,7 +28,9 @@ texto “Texto a ser falado.” e a observação OBS, sem nenhum motivo e nenhum
 TC OUT (o idioma ficará o padrão, “Português”). Note como foi necessário usar o
 “#” para pular o campo de motivo. Caso ele não fosse utilizado, a entrada teria
 OBS como motivo e nenhuma observação.
+
 adr personagem “Texto a ser falado.” # # 01:23:04:02 # Idioma
+
 No caso acima, a entrada de PERSONAGEM vai ter o mesmo texto, nenhum
 motivo e nenhuma observação, TC OUT 01:23:04:02 e idioma Idioma. Note que
 foi necessário colocar no Marker 2 marcações “#” antes de informar o TC OUT,
