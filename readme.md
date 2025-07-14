@@ -37,3 +37,7 @@ Sempre que o idioma for omitido ele será computado como o padrão, “Portuguê
 Para informar o idioma “Español” basta colocar um “e” na posição do idioma.
 Caso queira-se marcar qualquer outro idioma, é necessário escrever por
 completo.
+
+## Como Exportar os Markers no Pro Tools
+
+File -> Export -> Session Info as Text -> Deixar selecionado apenas Include Markers, e mudar File Format para UTF-8 ‘TEXT’
