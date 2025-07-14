@@ -126,10 +126,10 @@ def string_sem_lixo(string):
     controle = string.split()
     retorno = ''
     for palavra in controle:
-        if palavra.upper() not in ('RULER', 'MARKERS'):
-            for c in palavra:
-                retorno += c
-            retorno += ' '
+        if palavra.upper() == 'MARKERS':
+            return retorno
+        else:
+            retorno += f'{palavra} '
     return retorno
 
 
@@ -179,7 +179,9 @@ def importar_txt():
         while s != '':
             # A partir da linha correta, o programa avalia quais markers são válidos para a lista de ADR
             valores = s.split()
-            marker = valores[4]
+            marker = ''
+            if len(valores) >= 5:
+                marker = valores[4]
             if marker.upper() == 'ADR':
                 tc_marker = valores[1]
                 pers_marker = ''
@@ -768,157 +770,182 @@ pady_1 = (pady_0,45)
 
 # Inicialização e posicionamento de cada widget do programa
 
-txt_projeto = Entry(raiz, width=8)
-btn_abrir = Button(raiz, text='Abrir projeto', command=abrir)
+# Canvas e Scrollbar
+canvas = Canvas(raiz, borderwidth=0, highlightthickness=0)
+scrollbar = Scrollbar(raiz, orient=VERTICAL, command=canvas.yview)
+canvas.configure(yscrollcommand=scrollbar.set)
+
+scrollbar.pack(side=RIGHT, fill=Y)
+canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+# Frame dentro do canvas para conter os widgets
+frame = Frame(canvas)
+canvas.create_window((0, 0), window=frame, anchor="nw")
+
+# Atualiza a scrollregion quando o frame for redimensionado
+def on_frame_config(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+frame.bind("<Configure>", on_frame_config)
+
+# Roda do mouse
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+
+txt_projeto = Entry(frame, width=8)
+btn_abrir = Button(frame, text='Abrir projeto', command=abrir)
 btn_abrir.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_1)
-btn_salvar = Button(raiz, text='Salvar projeto', command=lambda:salvar(txt_projeto.get()))
+btn_salvar = Button(frame, text='Salvar projeto', command=lambda:salvar(txt_projeto.get()))
 btn_salvar.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_1, columnspan=3)
 
 linha_widget += 1
 
-lbl_projeto = Label(raiz, text='Sigla do projeto:')
+lbl_projeto = Label(frame, text='Sigla do projeto:')
 lbl_projeto.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
 txt_projeto.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
 div_var = StringVar()
-lbl_div = Label(raiz, text='Escolha o tipo de divisão do projeto:')
+lbl_div = Label(frame, text='Escolha o tipo de divisão do projeto:')
 lbl_div.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-rad_ep = Radiobutton(raiz, text='Episódio', variable=div_var, value='EP', command=lambda:valida_importar())
+rad_ep = Radiobutton(frame, text='Episódio', variable=div_var, value='EP', command=lambda:valida_importar())
 linha_widget += 1
 rad_ep.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-rad_rolo = Radiobutton(raiz, text='Rolo', variable=div_var, value='Rolo', command=lambda:valida_importar())
+rad_rolo = Radiobutton(frame, text='Rolo', variable=div_var, value='Rolo', command=lambda:valida_importar())
 rad_rolo.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
-rad_rolos = Radiobutton(raiz, text='Rolos juntos', variable=div_var, value='Rolos juntos', command=lambda:valida_importar())
+rad_rolos = Radiobutton(frame, text='Rolos juntos', variable=div_var, value='Rolos juntos', command=lambda:valida_importar())
 rad_rolos.grid(row=linha_widget, column=2, sticky='W', padx=padx_1, pady=pady_0)
 div_var.set('EP')
 
 linha_widget += 1
 
-lbl_numero = Label(raiz, text='Número do EP ou do Rolo:')
+lbl_numero = Label(frame, text='Número do EP ou do Rolo:')
 lbl_numero.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_1)
-txt_numero = Entry(raiz, width=2, state='normal', validate='key', validatecommand=(raiz.register(numero_valido), '%S', '%P'))
+txt_numero = Entry(frame, width=2, state='normal', validate='key', validatecommand=(frame.register(numero_valido), '%S', '%P'))
 txt_numero.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_1)
 txt_numero.bind('<KeyRelease>', lambda e: valida_importar())
 
 linha_widget += 1
 
-btn_importar = Button(raiz, text='Importar Markers', state='disabled', command=importar_txt)
+btn_importar = Button(frame, text='Importar Markers', state='disabled', command=importar_txt)
 btn_importar.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-btn_apagar = Button(raiz, text='Apagar markers importados', state='disabled', command=apagar_markers)
+btn_apagar = Button(frame, text='Apagar markers importados', state='disabled', command=apagar_markers)
 btn_apagar.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0, columnspan=2)
 
 linha_widget += 1
 
-lbl_importado = Label(raiz, text='Nenhum marker importado (o usuário não importou)')
+lbl_importado = Label(frame, text='Nenhum marker importado (o usuário não importou)')
 lbl_importado.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, columnspan=3, pady=pady_1)
 
 linha_widget += 1
 
-lbl_link = Label(raiz, text='Link da planilha:')
+lbl_link = Label(frame, text='Link da planilha:')
 lbl_link.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-txt_link = Entry(raiz, width=50)
+txt_link = Entry(frame, width=50)
 txt_link.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0, columnspan=4)
 
 linha_widget += 1
 
-lbl_pagina = Label(raiz, text='Nome da página da planilha:')
+lbl_pagina = Label(frame, text='Nome da página da planilha:')
 lbl_pagina.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-txt_pagina = Entry(raiz, width=15)
+txt_pagina = Entry(frame, width=15)
 txt_pagina.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0, columnspan=3)
 
 linha_widget += 1
 
-btn_conectar = Button(raiz, text='Conectar', command=conectar)
+btn_conectar = Button(frame, text='Conectar', command=conectar)
 btn_conectar.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-btn_desconectar = Button(raiz, text='Desconectar', state='disabled', command=desconectar)
+btn_desconectar = Button(frame, text='Desconectar', state='disabled', command=desconectar)
 btn_desconectar.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_status = Label(raiz, text='Não houve conexão com nenhuma planilha')
+lbl_status = Label(frame, text='Não houve conexão com nenhuma planilha')
 lbl_status.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_1, columnspan=3)
 
 linha_widget += 1
 
-lbl_colunas = Label(raiz, text='Informe a letra das colunas dos dados abaixo como estão na planilha '
+lbl_colunas = Label(frame, text='Informe a letra das colunas dos dados abaixo como estão na planilha '
                     '(as colunas com * são obrigatórias):')
 lbl_colunas.grid(row=linha_widget, column=0, columnspan=5, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
 
-lbl_tc = Label(raiz, text='TC IN*')
+lbl_tc = Label(frame, text='TC IN*')
 lbl_tc.grid(row=linha_widget, column=0, sticky='E', padx=padx_1)
-txt_tc = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_tc = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_tc.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
-lbl_pers = Label(raiz, text='Personagem*')
+lbl_pers = Label(frame, text='Personagem*')
 lbl_pers.grid(row=linha_widget, column=2, sticky='E', padx=padx_1, pady=pady_0)
-txt_pers = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_pers = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_pers.grid(row=linha_widget, column=3, sticky='W', padx=padx_1, pady=pady_0)
-lbl_texto = Label(raiz, text='Texto*')
+lbl_texto = Label(frame, text='Texto*')
 lbl_texto.grid(row=linha_widget, column=4, sticky='E', padx=padx_1, pady=pady_0)
-txt_texto = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_texto = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_texto.grid(row=linha_widget, column=5, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_motivo = Label(raiz, text='Motivo')
+lbl_motivo = Label(frame, text='Motivo')
 lbl_motivo.grid(row=linha_widget, column=0, sticky='E', padx=padx_1, pady=pady_0)
-txt_motivo = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_motivo = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_motivo.grid(row=linha_widget, column=1,sticky='W', padx=padx_1, pady=pady_0)
-lbl_obs = Label(raiz, text='OBS')
+lbl_obs = Label(frame, text='OBS')
 lbl_obs.grid(row=linha_widget, column=2, sticky='E', padx=padx_1, pady=pady_0)
-txt_obs = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_obs = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_obs.grid(row=linha_widget, column=3, sticky='W', padx=padx_1)
-lbl_tecnica = Label(raiz, text='Artística/Técnica')
+lbl_tecnica = Label(frame, text='Artística/Técnica')
 lbl_tecnica.grid(row=linha_widget, column=4, sticky='E', padx=padx_1, pady=pady_0)
-txt_tecnica = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_tecnica = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_tecnica.grid(row=linha_widget, column=5, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_tcout = Label(raiz, text='TC OUT')
+lbl_tcout = Label(frame, text='TC OUT')
 lbl_tcout.grid(row=linha_widget, column=0, sticky='E', padx=padx_1, pady=pady_1)
-txt_tcout = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_tcout = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_tcout.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_1)
-lbl_idioma = Label(raiz, text='Idioma')
+lbl_idioma = Label(frame, text='Idioma')
 lbl_idioma.grid(row=linha_widget, column=2, sticky='E', padx=padx_1, pady=pady_1)
-txt_idioma = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_idioma = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_idioma.grid(row=linha_widget, column=3, sticky='W', padx=padx_1, pady=pady_1)
-lbl_rolo = Label(raiz, text='Rolo')
+lbl_rolo = Label(frame, text='Rolo')
 lbl_rolo.grid(row=linha_widget, column=4, sticky='E', padx=padx_1, pady=pady_1)
-txt_rolo = Entry(raiz, width=1, validate='key', validatecommand=(raiz.register(coluna_valida), '%S', '%P'))
+txt_rolo = Entry(frame, width=1, validate='key', validatecommand=(frame.register(coluna_valida), '%S', '%P'))
 txt_rolo.grid(row=linha_widget, column=5, sticky='W', padx=padx_1, pady=pady_1)
 
 linha_widget += 1
 
-lbl_linha = Label(raiz, text='Linha de início das entradas na planilha*')
+lbl_linha = Label(frame, text='Linha de início das entradas na planilha*')
 lbl_linha.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
-txt_linha = Entry(raiz, width=2, validate='key', validatecommand=(raiz.register(numero_valido), '%S', '%P'))
+txt_linha = Entry(frame, width=2, validate='key', validatecommand=(frame.register(numero_valido), '%S', '%P'))
 txt_linha.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_linha_final = Label(raiz, text='Linha em que terminam as entradas:')
+lbl_linha_final = Label(frame, text='Linha em que terminam as entradas:')
 lbl_linha_final.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, columnspan=2, pady=pady_0)
-txt_linha_final = Entry(raiz, width=2, validate='key', validatecommand=(raiz.register(numero_valido), '%S', '%P'))
+txt_linha_final = Entry(frame, width=2, validate='key', validatecommand=(frame.register(numero_valido), '%S', '%P'))
 txt_linha_final.grid(row=linha_widget, column=1, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_linha_final2 = Label(raiz, text='(se não houver nenhuma entrada na planilha, não preencha)')
+lbl_linha_final2 = Label(frame, text='(se não houver nenhuma entrada na planilha, não preencha)')
 lbl_linha_final2.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=(0, 45), columnspan=2)
 
 linha_widget += 1
 
-btn_executar = Button(raiz, text='Executar', state='disabled', command=executar)
+btn_executar = Button(frame, text='Executar', state='disabled', command=executar)
 btn_executar.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_0)
 
 linha_widget += 1
 
-lbl_gerados = Label(raiz, text='Nenhum texto gerado')
+lbl_gerados = Label(frame, text='Nenhum texto gerado')
 lbl_gerados.grid(row=linha_widget, column=0, sticky='W', padx=padx_1, pady=pady_1)
 
 raiz.mainloop()
