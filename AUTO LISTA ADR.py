@@ -4,8 +4,10 @@ from tkinter.filedialog import asksaveasfile
 from tkinter import messagebox
 import os
 import pygsheets
+import platform
 
 raiz = Tk()
+raiz.geometry("800x600")
 raiz.title('AUTO LISTA ADR')
 
 escritas = 0
@@ -790,10 +792,22 @@ frame.bind("<Configure>", on_frame_config)
 
 # Roda do mouse
 def _on_mousewheel(event):
-    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    if platform.system() == 'Windows':
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    elif platform.system() == 'Darwin':  # macOS
+        canvas.yview_scroll(int(-1*(event.delta)), "units")
+    else:  # Linux
+        if event.num == 4:
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            canvas.yview_scroll(1, "units")
 
+# Windows e macOS
 canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
+# Linux (usa botões 4 e 5 para rolagem)
+canvas.bind_all("<Button-4>", _on_mousewheel)
+canvas.bind_all("<Button-5>", _on_mousewheel)
 
 txt_projeto = Entry(frame, width=8)
 btn_abrir = Button(frame, text='Abrir projeto', command=abrir)
