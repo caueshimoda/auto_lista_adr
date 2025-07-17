@@ -28,7 +28,9 @@ texto “Texto a ser falado.” e a observação OBS, sem nenhum motivo e nenhum
 TC OUT (o idioma ficará o padrão, “Português”). Note como foi necessário usar o
 “#” para pular o campo de motivo. Caso ele não fosse utilizado, a entrada teria
 OBS como motivo e nenhuma observação.
+
 adr personagem “Texto a ser falado.” # # 01:23:04:02 # Idioma
+
 No caso acima, a entrada de PERSONAGEM vai ter o mesmo texto, nenhum
 motivo e nenhuma observação, TC OUT 01:23:04:02 e idioma Idioma. Note que
 foi necessário colocar no Marker 2 marcações “#” antes de informar o TC OUT,
@@ -37,3 +39,7 @@ Sempre que o idioma for omitido ele será computado como o padrão, “Portuguê
 Para informar o idioma “Español” basta colocar um “e” na posição do idioma.
 Caso queira-se marcar qualquer outro idioma, é necessário escrever por
 completo.
+
+## Como Exportar os Markers no Pro Tools
+
+File -> Export -> Session Info as Text -> Deixar selecionado apenas Include Markers, e mudar File Format para UTF-8 ‘TEXT’
